@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Oct 30 00:10:44 2020
+
+@author: sanaullah
+"""
+
+
+
+#import efficientnet.keras as efn
+import skimage.io
+from scipy.ndimage import rotate
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+
+def tile_image(img,res,n):
+    
+    if n ==9:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]]]),
+                        np.vstack([img[res[3]],img[res[4]],img[res[5]]]),
+                        np.vstack([img[res[6]],img[res[7]],img[res[8]]])])
+    elif n==12:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]]]),
+                        np.vstack([img[res[3]],img[res[4]],img[res[5]]]),
+                        np.vstack([img[res[6]],img[res[7]],img[res[8]]]),
+                        np.vstack([img[res[9]],img[res[10]],img[res[11]]])])
+        
+    elif n==16:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]],img[res[3]]]),
+                        np.vstack([img[res[4]],img[res[5]],img[res[6]],img[res[7]]]),
+                        np.vstack([img[res[8]],img[res[9]],img[res[10]],img[res[11]]]),
+                        np.vstack([img[res[12]],img[res[13]],img[res[14]],img[res[15]]])])
+        
+    elif n==20:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]],img[res[3]]]),
+                        np.vstack([img[res[4]],img[res[5]],img[res[6]],img[res[7]]]),
+                        np.vstack([img[res[8]],img[res[9]],img[res[10]],img[res[11]]]),
+                        np.vstack([img[res[12]],img[res[13]],img[res[14]],img[res[15]]]),
+                        np.vstack([img[res[16]],img[res[17]],img[res[18]],img[res[19]]])])
+        
+    
+    elif n==25:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]],img[res[3]],img[res[4]]]),
+                        np.vstack([img[res[5]],img[res[6]],img[res[7]],img[res[8]],img[res[9]]]),
+                        np.vstack([img[res[10]],img[res[11]],img[res[12]],img[res[13]],img[res[14]]]),
+                        np.vstack([img[res[15]],img[res[16]],img[res[17]],img[res[18]],img[res[19]]]),
+                        np.vstack([img[res[20]],img[res[21]],img[res[22]],img[res[23]],img[res[24]]])])
+        
+
+    
+    elif n==30:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]],img[res[3]],img[res[4]]]),
+                        np.vstack([img[res[5]],img[res[6]],img[res[7]],img[res[8]],img[res[9]]]),
+                        np.vstack([img[res[10]],img[res[11]],img[res[12]],img[res[13]],img[res[14]]]),
+                        np.vstack([img[res[15]],img[res[16]],img[res[17]],img[res[18]],img[res[19]]]),
+                        np.vstack([img[res[20]],img[res[21]],img[res[22]],img[res[23]],img[res[24]]]),
+                        np.vstack([img[res[25]],img[res[26]],img[res[27]],img[res[28]],img[res[29]]])])
+        
+
+     
+    elif n==36:
+        imgg =np.hstack([np.vstack([img[res[0]],img[res[1]],img[res[2]],img[res[3]],img[res[4]],img[res[5]]]),
+                        np.vstack([img[res[6]],img[res[7]],img[res[8]],img[res[9]],img[res[10]],img[res[11]]]),
+                        np.vstack([img[res[12]],img[res[13]],img[res[14]],img[res[15]],img[res[16]],img[res[17]]]),
+                        np.vstack([img[res[18]],img[res[19]],img[res[20]],img[res[21]],img[res[22]],img[res[23]]]),
+                        np.vstack([img[res[24]],img[res[25]],img[res[26]],img[res[27]],img[res[28]],img[res[29]]]),
+                        np.vstack([img[res[30]],img[res[31]],img[res[32]],img[res[33]],img[res[34]],img[res[35]]])])
+        
+    
+    return imgg
+
+def ready_window(image,window,st):
+    
+    h=image.shape[0]
+    w=image.shape[1]
+    region=[]
+    for i in range(0,w,1):
+        if window+i*st<=w:
+            for j in range(0,h,1):
+                if window+j*st<=h:
+                    x= j*st
+                    y=i*st
+                    xx = image[x:x+window,y:y+window]
+                    region.append(xx)
+                    
+    return region
+def win_rat(window):
+    high_rat =[]
+    high_img=[]
+    
+    for i in range(len(window)):
+        
+        x=window[i]
+        sm =np.sum(x,axis=-1)
+        wp= np.count_nonzero(sm<695)
+        ratio =wp/(x.shape[0]*x.shape[1])
+        
+        if .2<=ratio:
+            high_rat.append(ratio)
+            high_img.append(x)
+    
+    return high_rat,high_img
+
+
+def ready_image(path,win,st):
+    image =skimage.io.MultiImage(path)[-2]
+    image =np.array(image)
+    h,w= image.shape[0],image.shape[1]
+    window= ready_window(image,win,st)
+    ratio_list,img=win_rat(window)
+    
+    global tile
+
+    
+    if 9<=len(img)<=11:
+        res = sorted(range(len(ratio_list)), key = lambda sub: ratio_list[sub])[-9:] 
+        tile =tile_image(img,res,9)
+    
+    elif 12<=len(img)<=15:
+        res = sorted(range(len(ratio_list)), key = lambda sub: ratio_list[sub])[-12:] 
+        tile =tile_image(img,res,12)
+    
+    elif 16<=len(img)<=19:
+       
+        res = sorted(range(len(ratio_list)), key = lambda sub: ratio_list[sub])[-16:] 
+        
+        tile =tile_image(img,res,16)
+    
+    elif 20<=len(img)<=24:
+        res = sorted(range(len(ratio_list)), key = lambda sub: ratio_list[sub])[-20:] 
+        tile =tile_image(img,res,20)
+    
+    elif 25<=len(img)<=35:
+        res = sorted(range(len(ratio_list)), key = lambda sub: ratio_list[sub])[-25:] 
+        tile =tile_image(img,res,25)
+       
+    elif 36<=len(img):
+        res = sorted(range(len(ratio_list)), key = lambda sub: ratio_list[sub])[-36:] 
+        tile =tile_image(img,res,36)
+    
+    return ratio_list,img,tile
